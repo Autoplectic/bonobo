@@ -108,6 +108,12 @@ def test_fixedwindow():
     assert context.get_buffer() == [(0, ), (1, ), (2, )]
 
 
+def test_collector():
+    with BufferingNodeExecutionContext(bonobo.Collector()) as context:
+        context.write_sync(*range(10))
+    assert context.get_buffer() == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+
 def test_methodcaller():
     with BufferingNodeExecutionContext(methodcaller('swapcase')) as context:
         context.write_sync('aaa', 'bBb', 'CcC')

@@ -13,6 +13,7 @@ from bonobo.util.term import CLEAR_EOL
 from mondrian import term
 
 __all__ = [
+    'Collector',
     'FixedWindow',
     'Format',
     'Limit',
@@ -88,7 +89,7 @@ class PrettyPrinter(Configurable):
         (lambda self, index, key, value: (value is not None) and (not isinstance(key, str) or not key.startswith('_'))),
         __doc__='''
             A filter that determine what to print.
-            
+
             Default is to ignore any key starting with an underscore and none values.
         '''
     )
@@ -195,6 +196,24 @@ class FixedWindow(Configurable):
         if len(buffer) >= self.length:
             yield tuple(buffer.get())
             buffer.set([])
+
+
+class Collector(Configurable):
+    """
+    Transformation to collect all inputs together as a tuple.
+
+    For example, if the input is successively 1, 2, 3, 4, etc. and you pass it through ``Collector()``, you'll get [1, 2, 3, 4].
+
+    """
+
+    @ContextProcessor
+    def buffer(self, context):
+        buffer = yield ValueHolder([])
+        context.send(buffer.get())
+
+    @use_raw_input
+    def __call__(self, buffer, bag):
+        buffer.append(bag)
 
 
 @transformation_factory
